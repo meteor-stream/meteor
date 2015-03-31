@@ -1,3 +1,5 @@
+[![Stories in Ready](https://badge.waffle.io/meteor-stream/meteor.png?label=ready&title=Ready)](http://waffle.io/meteor-stream/meteor)
+
 # Meteor
 
 Meteor is an ultra-simple environment for building modern web

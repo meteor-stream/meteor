@@ -3,6 +3,8 @@
  * @namespace
  */
 SQL = {};
+var pg = npm.require('pg');
+var conString = 'postgres://postgres:1234@localhost/postgres';
 
 /**
  * @summary Constructor for a Collection

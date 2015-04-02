@@ -288,9 +288,25 @@ _.extend(SQL.Collection.prototype, {
     // careful about the length of arguments.
     var self = this;
     var argArray = _.toArray(arguments);
-    // PAULO & KATE TO IMPLEMENT
-        // return self._collection.find(self._getFindSelector(argArray),
-        //                          self._getFindOptions(argArray));
+      var selector = arguments[0];
+      var options = arguments[1];
+      var sort = options.sort;
+      var skip = options.skip;
+      var limit = options.limit;
+      var fields = options.fields || "*";
+      var reactive = options.reactive;
+      var transform = options.transform;
+      pg.connect(conString, function(err, client, done){
+          console.log(err);
+          //console.log(client, 1234);
+          var find = "SELECT $1 FROM $2 WHERE data @> $3 order by $4 limit $5";
+          client.query(find, [fields, this.name, selector, sort, limit], function(error, results) {
+            console.log("find results", results);
+            console.log("find error", error);
+            //console.log(results);
+            done();
+          });
+        });
   },
 
   /**

@@ -19,19 +19,19 @@ SQL = {};
  // Confirm with paulo that SQL can generate objectId
  - **`'SQL'`**:  random [`SQL.ObjectID`](#SQL_object_id) values
 
-The default id generation technique is `'STRING'`.
+ The default id generation technique is `'STRING'`.
  * @param {Function} options.transform An optional transformation function. Documents will be passed through this function before being returned from `fetch` or `findOne`, and before being passed to callbacks of `observe`, `map`, `forEach`, `allow`, and `deny`. Transforms are *not* applied for the callbacks of `observeChanges` or to cursors returned from publish functions.
  */
 
-SQL.Collection = function(name, options){
+SQL.Collection = function(name, options) {
   var self = this;
-  if (! (self instanceof SQL.Collection))
+  if (!(self instanceof SQL.Collection))
     throw new Error('use "new" to construct a SQL.Collection');
 
   if (!name && (name !== null)) {
     Meteor._debug("Warning: creating anonymous collection. It will not be " +
-                  "saved or synchronized over the network. (Pass null for " +
-                  "the collection name to turn off this warning.)");
+    "saved or synchronized over the network. (Pass null for " +
+    "the collection name to turn off this warning.)");
     name = null;
   }
 
@@ -48,7 +48,7 @@ SQL.Collection = function(name, options){
     options = {connection: options};
   }
 
-    // Backwards compatibility: "connection" used to be called "manager".
+  // Backwards compatibility: "connection" used to be called "manager".
   if (options && options.manager && !options.connection) {
     options.connection = options.manager;
   }
@@ -62,29 +62,29 @@ SQL.Collection = function(name, options){
   }, options);
 
   switch (options.idGeneration) {
-  case 'MONGO':
-    self._makeNewID = function () {
-      var src = name ? DDP.randomStream('/collection/' + name) : Random;
-      return new Mongo.ObjectID(src.hexString(24));
-    };
-    break;
-  case 'STRING':
-  default:
-    self._makeNewID = function () {
-      var src = name ? DDP.randomStream('/collection/' + name) : Random;
-      return src.id();
-    };
-    break;
+    case 'MONGO':
+      self._makeNewID = function() {
+        var src = name ? DDP.randomStream('/collection/' + name) : Random;
+        return new Mongo.ObjectID(src.hexString(24));
+      };
+      break;
+    case 'STRING':
+    default:
+      self._makeNewID = function() {
+        var src = name ? DDP.randomStream('/collection/' + name) : Random;
+        return src.id();
+      };
+      break;
   }
 
   self._transform = LocalCollection.wrapTransform(options.transform);
 
-  if (! name || options.connection === null)
-    // note: nameless collections never have a connection
+  if (!name || options.connection === null)
+  // note: nameless collections never have a connection
     self._connection = null;
   else if (options.connection)
-    // connections is passed in on the client side
-    // it is a large object so we need to see how it is interacted with to better understand it
+  // connections is passed in on the client side
+  // it is a large object so we need to see how it is interacted with to better understand it
     self._connection = options.connection;
   else if (Meteor.isClient)
     self._connection = Meteor.connection;
@@ -97,8 +97,8 @@ SQL.Collection = function(name, options){
     // collection from Node code without webapp", but we don't yet.
     // #MeteorServerNul
     if (name && self._connection === Meteor.server &&
-        typeof MongoInternals !== "undefined" &&
-        MongoInternals.defaultRemoteCollectionDriver) {
+      typeof MongoInternals !== "undefined" &&
+      MongoInternals.defaultRemoteCollectionDriver) {
       // COME BACK AND UPDATE TO SQL
       options._driver = MongoInternals.defaultRemoteCollectionDriver();
     } else {
@@ -129,7 +129,7 @@ SQL.Collection = function(name, options){
       // message, and then we can either directly apply it at endUpdate time if
       // it was the only update, or do pauseObservers/apply/apply at the next
       // update() if there's another one.
-      beginUpdate: function (batchSize, reset) {
+      beginUpdate: function(batchSize, reset) {
         // pause observers so users don't see flicker when updating several
         // objects at once (including the post-reconnect reset-and-reapply
         // stage), and so that a re-sorting of a query can take advantage of the
@@ -144,7 +144,7 @@ SQL.Collection = function(name, options){
 
       // Apply an update.
       // XXX better specify this interface (not in terms of a wire message)?
-      update: function (msg) {
+      update: function(msg) {
         var mongoId = LocalCollection._idParse(msg.id);
         var doc = self._collection.findOne(mongoId);
 
@@ -177,7 +177,7 @@ SQL.Collection = function(name, options){
             throw new Error("Expected to find a document to change");
           if (!_.isEmpty(msg.fields)) {
             var modifier = {};
-            _.each(msg.fields, function (value, key) {
+            _.each(msg.fields, function(value, key) {
               if (value === undefined) {
                 if (!modifier.$unset)
                   modifier.$unset = {};
@@ -197,16 +197,16 @@ SQL.Collection = function(name, options){
       },
 
       // Called at the end of a batch of updates.
-      endUpdate: function () {
+      endUpdate: function() {
         self._collection.resumeObservers();
       },
 
       // Called around method stub invocations to capture the original versions
       // of modified documents.
-      saveOriginals: function () {
+      saveOriginals: function() {
         self._collection.saveOriginals();
       },
-      retrieveOriginals: function () {
+      retrieveOriginals: function() {
         return self._collection.retrieveOriginals();
       }
     });
@@ -215,20 +215,20 @@ SQL.Collection = function(name, options){
       throw new Error("There is already a collection named '" + name + "'");
   }
 
- /*************************************************************
- // We chose not to include the following line to keep things simple. Can be added later.
- // self._defineMutationMethods();
- *************************************************************/
   /*************************************************************
-  // autopublish
-  // Someone will have to look into the publishing mechanism and see if this this is needed and how to do it for SQL
-  if (Package.autopublish && !options._preventAutopublish && self._connection
-      && self._connection.publish) {
+   // We chose not to include the following line to keep things simple. Can be added later.
+   // self._defineMutationMethods();
+   *************************************************************/
+  /*************************************************************
+   // autopublish
+   // Someone will have to look into the publishing mechanism and see if this this is needed and how to do it for SQL
+   if (Package.autopublish && !options._preventAutopublish && self._connection
+   && self._connection.publish) {
     self._connection.publish(null, function () {
       return self.find();
     }, {is_auto: true});
   }
-  *************************************************************/
+   *************************************************************/
 };
 
 
@@ -237,27 +237,26 @@ SQL.Collection = function(name, options){
 ///
 
 
-
 _.extend(SQL.Collection.prototype, {
 
-  _getFindSelector: function (args) {
+  _getFindSelector: function(args) {
     if (args.length == 0)
       return {};
     else
       return args[0];
   },
 
-  _getFindOptions: function (args) {
+  _getFindOptions: function(args) {
     var self = this;
     if (args.length < 2) {
-      return { transform: self._transform };
+      return {transform: self._transform};
     } else {
       check(args[1], Match.Optional(Match.ObjectIncluding({
         fields: Match.Optional(Match.OneOf(Object, undefined)),
         sort: Match.Optional(Match.OneOf(Object, Array, undefined)),
         limit: Match.Optional(Match.OneOf(Number, undefined)),
         skip: Match.Optional(Match.OneOf(Number, undefined))
-     })));
+      })));
 
       return _.extend({
         transform: self._transform
@@ -265,7 +264,7 @@ _.extend(SQL.Collection.prototype, {
     }
   },
 
-    /**
+  /**
    * @summary Find the documents in a collection that match the selector.
    * @locus Anywhere
    * @method find
@@ -282,31 +281,30 @@ _.extend(SQL.Collection.prototype, {
    * // Probably won't return SQL curso
    * @returns {SQL.Cursor}
    */
-  find: function (/* selector, options */) {
+  find: function(/* selector, options */) {
     // Collection.find() (return all docs) behaves differently
     // from Collection.find(undefined) (return 0 docs).  so be
     // careful about the length of arguments.
     var self = this;
-    var argArray = _.toArray(arguments);
-      var selector = arguments[0];
-      var options = arguments[1];
-      var sort = options.sort;
-      var skip = options.skip;
-      var limit = options.limit;
-      var fields = options.fields || "*";
-      var reactive = options.reactive;
-      var transform = options.transform;
-      pg.connect(conString, function(err, client, done){
-          console.log(err);
-          //console.log(client, 1234);
-          var find = "SELECT $1 FROM $2 WHERE data @> $3 order by $4 limit $5";
-          client.query(find, [fields, this.name, selector, sort, limit], function(error, results) {
-            console.log("find results", results);
-            console.log("find error", error);
-            //console.log(results);
-            done();
-          });
-        });
+    var selector = arguments[0];
+    var options = arguments[1];
+    var sort = options.sort;
+    var skip = options.skip;
+    var limit = options.limit;
+    var fields = options.fields || "*";
+    var reactive = options.reactive;
+    var transform = options.transform;
+    pg.connect(conString, function(err, client, done) {
+      console.log(err);
+      //console.log(client, 1234);
+      var find = "SELECT $1 FROM $2 WHERE data @> $3 order by $4 limit $5";
+      client.query(find, [fields, self.name, selector, sort, limit], function(error, results) {
+        console.log("find results", results);
+        console.log("find error", error);
+        //console.log(results);
+        done();
+      });
+    });
   },
 
   /**
@@ -324,19 +322,110 @@ _.extend(SQL.Collection.prototype, {
    * @param {Function} options.transform Overrides `transform` on the [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
    * @returns {Object}
    */
-  findOne: function (/* selector, options */) {
+  findOne: function(/* selector, options */) {
+    // Collection.find() (return all docs) behaves differently
+    // from Collection.find(undefined) (return 0 docs).  so be
+    // careful about the length of arguments.
     var self = this;
-    var argArray = _.toArray(arguments);
-    // PAULO AND KATE TO IMPLEMENT
-        // return self._collection.findOne(self._getFindSelector(argArray),
-        //                             self._getFindOptions(argArray));
+    var selector = arguments[0];
+    var options = arguments[1];
+    var fields = options.fields || "*";
+    var reactive = options.reactive;
+    var transform = options.transform;
+    pg.connect(conString, function(err, client, done) {
+      console.log(err);
+      //console.log(client, 1234);
+      var find = "SELECT $1 FROM $2 WHERE data @> $3 order by $4 limit 1";
+      client.query(find, [fields, self.name, selector, sort], function(error, results) {
+        console.log("find results", results);
+        console.log("find error", error);
+        //console.log(results);
+        done();
+      });
+    });
+  },
+
+
+  /**
+   * @summary Finds the first document that matches the selector, as ordered by sort and skip options.
+   * @locus Anywhere
+   * @method findOne
+   * @memberOf SQL.Collection
+   * @instance
+   * @param {SQLSelector} [selector] A query describing the documents to find
+   * @param {Object} [options]
+   * @param {SQLSortSpecifier} options.sort Sort order (default: natural order)
+   * @param {Number} options.skip Number of results to skip at the beginning
+   * @param {SQLFieldSpecifier} options.fields Dictionary of fields to return or exclude.
+   * @param {Boolean} options.reactive (Client only) Default true; pass false to disable reactivity
+   * @param {Function} options.transform Overrides `transform` on the [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
+   * @returns {Object}
+   */
+  update: function(/* selector, options */) {
+    // Collection.find() (return all docs) behaves differently
+    // from Collection.find(undefined) (return 0 docs).  so be
+    // careful about the length of arguments.
+    var self = this;
+    var selector = arguments[0];
+    var options = arguments[1];
+    var fields = options.fields || "*";
+    var reactive = options.reactive;
+    var transform = options.transform;
+    pg.connect(conString, function(err, client, done){
+      console.log(err);
+      var update = "update $1 set data = $2 where data @> $3";
+      client.query(update, [self, selector], function(error, results){
+        console.log("error in update", error);
+        console.log("error in results", results);
+        done();
+        callback(null);
+      })
+    })
+  },
+
+  /**
+   * @summary Finds the first document that matches the selector, as ordered by sort and skip options.
+   * @locus Anywhere
+   * @method findOne
+   * @memberOf SQL.Collection
+   * @instance
+   * @param {SQLSelector} [selector] A query describing the documents to find
+   * @param {Object} [options]
+   * @param {SQLSortSpecifier} options.sort Sort order (default: natural order)
+   * @param {Number} options.skip Number of results to skip at the beginning
+   * @param {SQLFieldSpecifier} options.fields Dictionary of fields to return or exclude.
+   * @param {Boolean} options.reactive (Client only) Default true; pass false to disable reactivity
+   * @param {Function} options.transform Overrides `transform` on the [`Collection`](#collections) for this cursor.  Pass `null` to disable transformation.
+   * @returns {Object}
+   */
+  insert: function(/* selector, options */) {
+    // Collection.find() (return all docs) behaves differently
+    // from Collection.find(undefined) (return 0 docs).  so be
+    // careful about the length of arguments.
+    var self = this;
+    var insert = arguments[0];
+    var options = arguments[1];
+    var fields = options.fields || "*";
+    var reactive = options.reactive;
+    var transform = options.transform;
+    pg.connect(conString, function(err, client, done){
+      console.log(err);
+      var update = "update $1 set data = $2 where data @> $3";
+      client.query(update, [self, insert], function(error, results){
+        console.log("error in update", error);
+        console.log("error in results", results);
+        done();
+        callback(null);
+      })
+    })
   }
+
 
 });
 
 /*
-Eddie and Eric's todos
-1) Look into cursors and publishing
-2) Look at how the collection mongo.js is called from client and server
-*/
+ Eddie and Eric's todos
+ 1) Look into cursors and publishing
+ 2) Look at how the collection mongo.js is called from client and server
+ */
 
